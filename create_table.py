@@ -214,4 +214,4 @@ class CreateTable:
         htmlFile.write(doc.getvalue())
         htmlFile.close()
         pdfkit.from_file(self.youtube_search_string + '/' +
-                         f'report_no_{report_no}.html', self.youtube_search_string + '/' + f'report_no_{report_no}.pdf', options=options)
+                         f'report_no_{report_no}.html', self.youtube_search_string + '/' + f'{a}_{f}_{e}.pdf', options=options)
