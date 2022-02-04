@@ -18,7 +18,8 @@ if operation == '1':
     r = ReadEmotion(input)
 
     # run through the faceism ratio program, calculate faceism ratio, and override emotion if neccessary
-    m = faceismCalculator(input)
+    # faceism ratio doesn't work anymore!!!!
+    # m = faceismCalculator(input)
 
     # calculate table which keeps faceism ratio, attractiveness constant
     t = CreateTable(input)

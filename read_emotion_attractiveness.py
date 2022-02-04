@@ -20,6 +20,9 @@ class ReadEmotion:
         # runs through each folder, takes the API result data and creates a separate image with the bounding boxes applied
         self.create_bounding_boxes()
 
+        # writes the faceism ratio of the image if there is only one person in the image
+        self.determine_faceism_ratio()
+
     def call_api(self):
         # each folder (youtube video) -> gets the LQ picture, and then runs it to the API, then creates a file which is the json output from the API
         for folder in helper_functions.listdir_nohidden(self.youtube_search_string):
@@ -31,6 +34,26 @@ class ReadEmotion:
                      '/' + folder + "/img_analyzer_data.txt", "w")
             f.write(r.text)
             f.close()
+
+    def determine_faceism_ratio(self):
+        for folder in helper_functions.listdir_nohidden(self.youtube_search_string):
+            #    Make analyzer data readable, cause the json they give back is not fun, basically just turns it into an object. Could probably make this a helper function
+            analyzer_data = open(self.youtube_search_string +
+                                 '/' + folder + "/img_analyzer_data.txt", "r").read()
+            analyzer_data = analyzer_data.replace(
+                'false', "False").replace('true', 'True')
+            analyzer_data = ast.literal_eval(analyzer_data)
+
+            if len(analyzer_data['people']) != 1:
+                print("More or less than 1 person in thumbnail")
+            else:
+                # takes the height of the face and divides it by the number of y pixels, gives rough estimate of the faceism ratio
+                faceism_ratio = (
+                    analyzer_data['people'][0]['location']['height'])/202
+                f = open(self.youtube_search_string +
+                         '/' + folder + "/faceismRatio.txt", "w")
+                f.write(str(faceism_ratio))
+                f.close()
 
     def create_bounding_boxes(self):
         for folder in helper_functions.listdir_nohidden(self.youtube_search_string):
