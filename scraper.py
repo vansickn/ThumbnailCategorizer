@@ -46,14 +46,10 @@ class Scraper:
         self.json_of_script = None
         for s in scripts:
             index = str(s).find("{\"")
-            # print(index)
-            # print(str(s)[index+2:index+17])
-            # print(s)
+
             if index == 59:  # just by trial and error I know this to be the line which holds the data I need
                 jsonString = (str(s)[index:]).replace(";</script>", "")
                 self.json_of_script = json.loads(jsonString)
-                # print(j)
-                # print(str(s)[index:])
         # don't really need this return statement but I'm going to leave it
         return self.json_of_script
 
@@ -62,8 +58,6 @@ class Scraper:
         # print(j)
         jsonToVideoRenderers = self.__findVideoRenderer__(j["contents"]["twoColumnSearchResultsRenderer"][
             "primaryContents"]["sectionListRenderer"]["contents"])
-        # [0]["itemSectionRenderer"]["contents"])
-        # print(jsonToVideoRenderers)
         videoRendererList = []
         for i in range(len(jsonToVideoRenderers)):
             # print(str(jsonToVideoRenderers[i]) + '\n\n')
