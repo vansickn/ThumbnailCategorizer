@@ -54,19 +54,20 @@ class CreateTable:
                     self.youtube_search_string + '/' + folder + "/faceismRatio.txt", "r").read())
             except:
                 faceism_ratio = None
-            if len(analyzer_data['people']) != 1 or faceism_ratio == None:
+            if len(analyzer_data['people']) != 1:
                 print("More or less than 1 person in thumbnail")
             else:
                 # getting emotions
                 emotions_dict = analyzer_data['people'][0]['emotion']['emotions']
                 print(emotions_dict)
-                print(faceism_ratio)
                 print(analyzer_data['people'][0]['attractiveness'])
                 self.dict_data[folder] = []
                 self.dict_data[folder].append(self.evaluate_category_attractiveness(
                     analyzer_data['people'][0]['attractiveness'], self.youtube_search_string + '/' + folder))
                 self.dict_data[folder].append(self.evaluate_category_faceism(
                     faceism_ratio, self.youtube_search_string + '/' + folder))
+
+                # getting the highest valued emotion
                 if len(emotions_dict) != 0:
                     self.dict_data[folder].append(
                         max(emotions_dict, key=emotions_dict.get))
@@ -75,18 +76,15 @@ class CreateTable:
         print(self.dict_data)
 
     def evaluate_category_faceism(self, ratio, path):
-        if ratio < .25:
+        if ratio < .333:
             self.f_sm.append(path)
             return 'sm'
-        if ratio >= .25 and ratio < .5:
+        if ratio >= .333 and ratio < .666:
             self.f_md.append(path)
             return 'md'
-        if ratio >= .5 and ratio < .75:
+        if ratio >= .666 and ratio < 1:
             self.f_lg.append(path)
             return 'lg'
-        if ratio >= .75:
-            self.f_xl.append(path)
-            return 'xl'
 
     def evaluate_category_attractiveness(self, attractiveness, path):
         if attractiveness < 2.5:
@@ -103,13 +101,15 @@ class CreateTable:
             return 'hot'
 
     def create_pandas_df(self):
+        # used to have faceism ratio as well, but that got bopped cause tkinter doesn't work anymore on MacOs Mojave
         df = pd.DataFrame.from_dict(self.dict_data, orient='index',
-                                    columns=['attractiveness', 'faceism ratio', 'emotion'])
+                                    columns=['attractiveness', 'faceism', 'emotion'])
         print(df)
         attractive = [self.dict_data[k][0] for k in self.dict_data.keys()]
         faceism = [self.dict_data[k][1] for k in self.dict_data.keys()]
         emotion = [self.dict_data[k][2] for k in self.dict_data.keys()]
 
+        # ct = pd.crosstab(index=[attractive], columns=[faceism, emotion])
         ct = pd.crosstab(index=[attractive], columns=[faceism, emotion])
         print(ct)
 
@@ -126,14 +126,14 @@ class CreateTable:
                 e = input("Emotion (happy,surprised,judging,afraid,neutral): ")
                 file_names = []
                 for index, row in df.iterrows():
-                    if row['attractiveness'] == a and row['faceism ratio'] == f and row['emotion'] == e:
+                    if row['attractiveness'] == a and row['emotion'] == e and row['faceism'] == f:
                         print(row.name)
                         file_names.append(row.name)
-                self.sendFilesToPDF(file_names, a, f, e, report_no)
+                self.sendFilesToPDF(file_names, f, a, e, report_no)
                 report_no += 1
                 print(ct)
 
-    def sendFilesToPDF(self, file_names, a, f, e, report_no):
+    def sendFilesToPDF(self, file_names, f, a, e, report_no):
         print(file_names)
         options = {
             "enable-local-file-access": None,
@@ -145,8 +145,8 @@ class CreateTable:
                 with tag('h1'):
                     text('Report for Search: ' + self.youtube_search_string)
                     doc.stag('br')
-                    text('Parameters held constant: Attractiveness: ' +
-                         a + " Faceism: " + f + " Emotion: " + e)
+                    text('Parameters held constant:' +
+                         " Attractiveness: " + a + " Emotion: " + e + " Face-ism: " + f)
                     for folder in file_names:
                         with tag('div'):
                             with tag('h3'):
@@ -214,4 +214,4 @@ class CreateTable:
         htmlFile.write(doc.getvalue())
         htmlFile.close()
         pdfkit.from_file(self.youtube_search_string + '/' +
-                         f'report_no_{report_no}.html', self.youtube_search_string + '/' + f'{a}_{f}_{e}.pdf', options=options)
+                         f'report_no_{report_no}.html', self.youtube_search_string + '/' + f'{a}_{e}_{f}.pdf', options=options)
